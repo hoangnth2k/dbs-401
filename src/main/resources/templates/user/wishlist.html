@@ -1,0 +1,228 @@
+<!doctype html>
+<html xmlns:th="https://www.thymeleaf.org">
+
+<!-- Mirrored from new.axilthemes.com/demo/template/etrade/blog-grid.html by HTTrack Website Copier/3.x [XR&CO'2014], Mon, 14 Oct 2024 00:33:41 GMT -->
+<head>
+    <title>TechShop || Wishlist</title>
+    <div th:insert="~{user/fragments/head::head}"></div>
+    <link rel="stylesheet"
+          th:href="@{/user/customize/css/main.css}"/>
+</head>
+
+<body class="sticky-header">
+    <!-- Start Header -->
+    <div th:insert="~{user/fragments/header::header}"></div>
+    <!-- End Header -->
+
+    <main class="main-wrapper">
+        <!-- Start Wishlist Area  -->
+        <div class="axil-wishlist-area axil-section-gap">
+            <div class="container">
+                <div class="product-table-heading">
+                    <h4 class="title">My Wish List on TechShop</h4>
+                    <form class="clear-wishlist">
+                        <input type="hidden" name="wishlistId" th:value="${session.wishlistId}">
+                        <button class="cart-clear">
+                            Clear Wishlist
+                        </button>
+                    </form>
+                </div>
+                <div class="table-responsive" id="wishlist-items-container">
+                    <input type="hidden"  id="is-wishlist-empty" th:value="${wishlistEmpty}">
+                    <table class="table axil-product-table axil-wishlist-table">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="product-remove"></th>
+                                <th scope="col" class="product-thumbnail">Product</th>
+                                <th scope="col" class="product-title">Product Name</th>
+                                <th scope="col" class="product-price">Unit Price</th>
+                                <th scope="col" class="product-stock-status">Stock Status</th>
+                                <th scope="col" class="product-add-cart"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="wishlist : ${wishlistItems}">
+                                <td class="product-remove">
+                                    <form th:action="@{/user/wishlist/remove}" class="remove-item">
+                                        <input type="hidden" name="wishlistId" th:value="${session.wishlistId}">
+                                        <input type="hidden" name="productId" th:value="${wishlist.productId}">
+                                        <button type="submit" class="remove-wishlist wishlist-remove">
+                                            <i class="fal fa-times"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                                <td class="product-thumbnail"><a th:href="@{/user/products/product-detail/{id}(id=${wishlist.productId})}">
+                                    <img th:if="${wishlist.isUrlImg()}"
+                                         th:src="${wishlist.thumbnail}"
+                                         class="product-image"
+                                         alt="Ảnh sản phẩm mặc định">
+                                    <img th:unless="${wishlist.isUrlImg()}"
+                                         th:src="@{'/uploads/' + ${wishlist.thumbnail}}"
+                                         class="product-image"
+                                         alt="Ảnh sản phẩm">
+
+                                </a></td>
+                                <td class="product-title"><a th:href="@{/user/products/product-detail/{id}(id=${wishlist.productId})}"
+                                                                th:text="*{wishlist.title}"></a></td>
+                                <td class="product-price" data-title="Price"
+                                    th:text="*{wishlist.unitPrice}"></td>
+                                <td class="product-stock-status" data-title="Status"
+                                    th:text="${wishlist.status ? 'In Stock' : 'Out of stock'}">In Stock</td>
+                                <td class="product-add-cart">
+                                    <form th:action="@{/user/cart/cart-add-wishlist}" method="post">
+                                        <input type="hidden" name="productId" th:value="${wishlist.productId}">
+                                        <input type="hidden" name="quantity" value="1">
+                                        <button type="submit" class="axil-btn btn-outline" th:disabled="${!wishlist.status}">Add to Cart</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="wishlist-empty-message" style="display: none;">
+                    <div class="empty-notification">
+                        <img th:src="@{/user/assets/images/my-image/empty-wishlist.png}" alt="Empty Wishlist">
+                        <p>Browse our catalog to add your favorite products to your wishlist!</p>
+                        <a href="/user/home" class="btn btn-primary">Continue Shopping</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End Wishlist Area  -->
+    </main>
+
+    <div th:insert="~{/user/fragments/service-area-footer::service-area-footer}"></div>
+    <!-- Start Footer Area  -->
+    <div th:insert="~{/user/fragments/footer::footer}"></div>
+    <!-- End Footer Area  -->
+
+    <!-- Product Quick View Modal Start -->
+    <div th:insert="~{/user/fragments/quickview::quick-view}"></div>
+    <!-- Product Quick View Modal End -->
+
+    <!-- Header Search Modal End -->
+    <div th:insert="~{/user/fragments/header-search::header-search}"></div>
+    <!-- Header Search Modal End -->
+
+    <div class="cart-dropdown" id="cart-dropdown">
+        <div class="cart-content-wrap">
+            <div class="cart-header">
+                <h2 class="header-title">Cart review</h2>
+                <button class="cart-close sidebar-close"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="cart-body">
+                <ul class="cart-item-list" th:each="cartDetail : ${cartDetailList}">
+                    <li class="cart-item">
+                        <div class="item-img">
+                            <a th:href="@{/user/products/product-detail/{id}(id=${cartDetail.productId})}">
+                                <img th:if="${cartDetail.isUrlImage()}"
+                                     th:src="${cartDetail.thumbnail}"
+                                     class="product-image"
+                                     alt="Ảnh sản phẩm mặc định">
+                                <img th:unless="${cartDetail.isUrlImage()}"
+                                     th:src="@{'/uploads/' + ${cartDetail.thumbnail}}"
+                                     class="product-image"
+                                     alt="Ảnh sản phẩm">
+                            </a>
+                        </div>
+                        <!-- End Single product cua Tuan-->
+                        <div class="item-content">
+                            <h3 class="item-title"><a th:href="@{/user/products/product-detail/{id}(id=${cartDetail.productId})}"
+                                                      th:text="${cartDetail.productName}"></a></h3>
+                            <div class="item-price"><span class="currency-symbol"></span><span th:text="${cartDetail.price}"></span></div>
+                            <div class="pro-qty item-quantity">
+                                <input type="number" class="quantity-input" th:value="${cartDetail.quantity}">
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="cart-footer">
+                <h3 class="cart-subtotal">
+                    <span class="subtotal-title">Subtotal:</span>
+                    <span class="subtotal-amount" th:if="${cart.id != null}"
+                          th:text="${totalPriceOfCart.totalPrice}"></span>
+                </h3>
+                <div class="group-btn">
+                    <a th:href="@{/user/cart}" class="axil-btn btn-bg-primary viewcart-btn">View Cart</a>
+                    <a th:href="@{/user/checkout}" class="axil-btn btn-bg-secondary checkout-btn">Checkout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- JS
+============================================ -->
+    <!-- Modernizer JS -->
+    <div th:insert="~{/user/fragments/script::script}"></div>
+
+<script>
+    $(document).ready(function (){
+       const isWishlistEmpty = $('#is-wishlist-empty').val() === 'true';
+       if (isWishlistEmpty){
+           $('#wishlist-items-container').hide();
+           $('#wishlist-empty-message').fadeIn();
+       }else{
+           $('#wishlist-items-container').show();
+       }
+    });
+
+    $(document).on('submit', '.remove-item', function(event) {
+        event.preventDefault(); // Ngăn form submit bình thường
+        // Lấy dữ liệu từ form
+        const $form = $(this);
+        const wishlistId = $form.find('input[name="wishlistId"]').val();
+        const productId = $form.find('input[name="productId"]').val();
+
+        // Gửi yêu cầu AJAX DELETE
+        $.ajax({
+            url: '/user/wishlist/remove',
+            type: 'DELETE',
+            data: { wishlistId: wishlistId, productId: productId },
+            success: function(response) {
+                alert(response); // Hiển thị thông báo thành công
+                $form.closest('tr').remove(); // Xoá dòng sản phẩm khỏi giao diện
+                // Kiểm tra nếu giỏ hàng trống
+                if ($('#wishlist-items-container table tbody tr').length === 0) {
+                    $('#wishlist-items-container table').hide();
+                    $('#wishlist-empty-message').fadeIn();
+                }
+            },
+            error: function(xhr) {
+                alert(xhr.responseText || 'Có lỗi xảy ra, vui lòng thử lại.');
+            }
+        });
+    });
+
+    $(document).on('submit', '.clear-wishlist', function (event){
+       event.preventDefault();
+
+       const $form = $(this);
+       const wishlistId = $form.find('input[name="wishlistId"]').val();
+
+       if (confirm("Are your sure you want to clear all items from the wishlist?")){
+           $.ajax({
+               url: '/user/wishlist/clear',
+               type: 'POST',
+               data: {wishlistId: wishlistId},
+               success: function (response){
+                   // Xoa toan bo thu muc ra khoi bang
+                   const container = $('#wishlist-items-container')
+                   container.hide();
+                   alert(response);
+                   // Hiển thị thông báo wishlist trống
+                   $('#wishlist-empty-message').fadeIn();
+               },
+               error: function (xhr){
+                   alert(xhr.responseText || 'Co loi, Vui long thu lai');
+               }
+           });
+       }
+
+    });
+</script>
+
+</body>
+
+
+<!-- Mirrored from new.axilthemes.com/demo/template/etrade/wishlist.html by HTTrack Website Copier/3.x [XR&CO'2014], Mon, 14 Oct 2024 00:33:29 GMT -->
+</html>

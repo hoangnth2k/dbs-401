@@ -1,0 +1,75 @@
+# declare global variable
+SERVER_PORT: 8085
+
+#port of smtp protocol
+EMAIL_HOST: smtp.gmail.com
+EMAIL_PORT: 587
+EMAIL_ID: hieu01bdvn@gmail.com
+EMAIL_PASSWORD: ocvqndmbczmueyks
+VERIFY_EMAIL_HOST: http://localhost:${SERVER_PORT}
+
+# server run with port 8080 - default
+server:
+  port: ${SERVER_PORT}
+
+#config database connection with mysql
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+    session:
+      timeout: 6h
+  datasource:
+    url: jdbc:oracle:thin:@192.168.1.24:1521/ORCLPDB1
+    username: tech_shop
+    password: 123456
+    driver-class-name: oracle.jdbc.OracleDriver
+  jpa:
+    database-platform: org.hibernate.dialect.OracleDialect
+    hibernate:
+      ddl-auto: none
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+      properties:
+        hibernate:
+          globally_quoted_identifiers: true
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: true
+  mail:
+    host: ${EMAIL_HOST}
+    port: ${EMAIL_PORT}
+    username: ${EMAIL_ID}
+    password: ${EMAIL_PASSWORD}
+    default-encoding: UTF-8
+    properties:
+      mail:
+        mime:
+          charset: UTF
+        smtp:
+          writetimeout: 10000
+          connectiontimeout: 10000
+          timeout: 10000
+          auth: true
+          starttls:
+            enable: true
+            required: true
+    verify:
+      host: ${VERIFY_EMAIL_HOST}
+
+paypal:
+  client:
+    id: AXBTSV0r2LIggE6o5iTeP9lcOXCHLCcLt6Gq4HmZTgZsFnmogPAIjTXF-usf9in5yEHcsPEjrFAWP_V6
+    secret: EJk9cXkWkiZ-5f5J61KQxnj3lb1vrfzGWKjPl7cZ-fuj7vdNiaxqWmzuhK9kQ8noD4CT_iKoBW6G0GpC
+  mode: sandbox
+  return-url: http://localhost:8080/user/checkout/paypal/success
+  cancel-url: http://localhost:8080/user/checkout/paypal/cancel
+jwt:
+  signedKey: "zsB+WqpHBR2Lorx/E7adcBsor1NwJQswYtB/bnFZdfThjCXxwyDGlpRtI1dcTPHE"
+
+currency:
+  api:
+    url: "https://v6.exchangerate-api.com/v6/35e55f125051d62ab8e392f6/latest/VND"
