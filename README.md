@@ -1,7 +1,7 @@
-# Welcome to TechShopHCMUTE Website
+# Welcome to TechShop Website
 # Project Overview
 
-TechShopHCMUTE is a project developed with the goal of learning about sales processes through various stages, from the manager's steps in preparing to add products to inventory, to showcasing products on the website for users to view, favorite, add to their cart, and proceed through the complex payment processes. TechShopHCMUTE is not only a capstone project for the Web Programming course but also a passionate initiative driven by the spirit of curiosity, innovation, and self-challenge to continuously improve the product. This is also our team’s first project, so it might still have shortcomings. We sincerely welcome feedback from everyone to help us improve and learn even more.
+TechShop is a project developed with the goal of learning about sales processes through various stages, from the manager's steps in preparing to add products to inventory, to showcasing products on the website for users to view, favorite, add to their cart, and proceed through the complex payment processes. TechShop is not only a capstone project for the Web Programming course but also a passionate initiative driven by the spirit of curiosity, innovation, and self-challenge to continuously improve the product. This is also our team’s first project, so it might still have shortcomings. We sincerely welcome feedback from everyone to help us improve and learn even more.
 
 ## GUI of App
 ### Login at here
@@ -67,7 +67,7 @@ This project leverages **Spring Boot** as the backend framework and **Thymeleaf*
   - Performs validations and data transformations before sending results to the controller.
 
 ### 3. **Data Access Layer**
-- **Description**: Manages interactions with the database with some RDBMS such as MySQL/PostgreSQL (or any supported RDBMS).
+- **Description**: Manages interactions with the database with some RDBMS such as MySQL/PostgreSQL/Oracle (or any supported RDBMS).
 - **Key Components**: Spring Data JPA, Repositories (`@Repository`).
 - **Responsibilities**:
   - Define repository interfaces for CRUD operations.
@@ -82,7 +82,7 @@ This project leverages **Spring Boot** as the backend framework and **Thymeleaf*
 - **Bootstrap**: A front-end framework for developing responsive and mobile-first websites.
 - **Thymeleaf**: A modern server-side Java template engine for web and standalone environments.
 - **Hibernate**: An object-relational mapping (ORM) tool for Java.
-- **MySQL**: A relational database management system.
+- **ORACLE**: A relational database management system.
 - **Maven**: A build automation tool used primarily for Java projects.
 - **GitHub**: A web-based platform for version control and collaboration, allowing multiple people to work on projects simultaneously.
 - **AJAX**: A technique for creating asynchronous web applications, allowing web pages to be updated asynchronously by exchanging small amounts of data with the server behind the scenes.
@@ -98,7 +98,7 @@ This project leverages **Spring Boot** as the backend framework and **Thymeleaf*
 
 ## Installation
 1. Clone the repository:
-`git clone https://github.com/Hieu-with-love/tech-shop-hcmute.git`
+`https://github.com/hoangnth2k/dbs-401.git`
 2. Open the project with your preferred IDE
 3. Configuration the database connection in `src\main\resources\application.yml`
 4. Modify the package name according to your project. If the libraries I used are outdated, you can replace them with newer or alternative libraries.
@@ -109,12 +109,12 @@ This project leverages **Spring Boot** as the backend framework and **Thymeleaf*
   - Ex: 
     ```
       datasource:
-        url: jdbc:mysql://localhost:3306/tech_shop?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+        url: jdbc:oracle:thin:@localhost:1521/ORCLPDB1
         username: root
         password: 1234
     ```
     - You can update the database name to "tech_shop" as per your preference and modify the code according to your database. If not, you can copy the database name and create it with the same name as my existing configuration. 
-    If you are using MySQL, you can use the following syntax: `CREATE DATABASE tech_shop;`
+    If you are using ORACLE, you can use the following syntax: `CREATE DATABASE tech_shop;`
     - Also, change the username and password according to your existing database configuration.
 2. You can configure the security in the SecurityConfig file as per your requirements.
 ## Usage
@@ -155,4 +155,4 @@ We welcome contributions from everyone! If you have ideas, suggestions, or impro
 
 7. **Create a Pull Request**: Go to the original repository and create a pull request from your forked repository. Provide a clear description of your changes and why they should be merged.
 
-We appreciate your contributions and look forward to working together to improve TechShopHCMUTE!
+We appreciate your contributions and look forward to working together to improve TechShop!
