@@ -133,7 +133,7 @@ We welcome contributions from everyone! If you have ideas, suggestions, or impro
 
 2. **Clone the Repository**: Use `git clone` to clone the forked repository to your local machine.
     ```sh
-    https://github.com/Hieu-with-love/tech-shop-hcmute.git
+    https://github.com/hoangnth2k/dbs-401.git
     ```
 
 3. **Create a Branch**: Create a new branch for your feature or bug fix.
