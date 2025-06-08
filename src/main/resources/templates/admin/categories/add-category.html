@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <title>Categories || Add</title>
+    <div th:insert="~{admin/fragments/head::head}"></div>
+</head>
+<body>
+<div id="global-loader">
+    <div class="whirly-loader"> </div>
+</div>
+
+<div class="main-wrapper">
+
+    <div th:replace="~{admin/fragments/header::admin-header}"></div>
+
+    <div th:replace="~{admin/fragments/sidebar::admin-sidebar}"></div>
+
+    <div class="page-wrapper">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-title">
+                    <h4>Product Add Category</h4>
+                    <h6>Create new product Category</h6>
+                </div>
+            </div>
+            <div class="page-header" th:if="${error != null}">
+                <div class="page-title">
+                    <h4 th:text="${error}" style="color: red"></h4>
+                </div>
+            </div>
+
+            <form action="/admin/categories/insert" method="post" th:object="${category}">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-lg-6 col-sm-6 col-12">
+                                <div class="form-group">
+                                    <label>Category Name</label>
+                                    <input type="text" placeholder="Category name" name="name" required th:field="*{name}">
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <div class="form-group">
+                                    <label>Description</label>
+                                    <textarea class="form-control" th:field="*{description}"></textarea>
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <button type="submit" class="btn btn-submit me-2">Submit</button>
+                                <a th:href="@{/admin/categories}" class="btn btn-cancel">Cancel</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<div th:insert="~{admin/fragments/script::script}"></div>
+</body>
+</html>

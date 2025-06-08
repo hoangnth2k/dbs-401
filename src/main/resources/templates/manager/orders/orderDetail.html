@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+
+<head>
+    <title>Dashboard || Detail Order</title>
+    <div th:insert="~{manager/fragments/head::head}"></div>
+</head>
+<body>
+<div id="global-loader">
+    <div class="whirly-loader"></div>
+</div>
+
+<div class="main-wrapper">
+
+    <div th:replace="~{manager/fragments/header::header}"></div>
+
+    <div th:replace="~{manager/fragments/sidebar::sidebar}"></div>
+
+    <div class="page-wrapper">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-title">
+                    <h4>Order Detail</h4>
+                    <h6>Manage Your Order Here</h6>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8 col-sm-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="productdetails">
+                                <ul class="product-bar">
+                                    <li>
+                                        <h4>Order</h4>
+                                        <h6><span th:text="${order.get().getId()}"></span></h6>
+                                    </li>
+                                    <li>
+                                        <h4>Total Price</h4>
+                                        <h6><span th:text="${order.get().getTotalPrice()}"></span></h6>
+                                    </li>
+                                    <li>
+                                        <h4>Status</h4>
+                                        <h6>
+                                            <span class="badges bg-lightyellow"
+                                                  th:if="${order.get().getStatus().equals(orderStatus[0])}">Pending
+                                            </span>
+                                            <span class="badges bg-lightpurple"
+                                                  th:if="${order.get().getStatus().equals(orderStatus[1])}">Shipping
+                                            </span>
+                                            <span class="badges bg-lightgreen"
+                                                  th:if="${order.get().getStatus().equals(orderStatus[2])}">Delivered
+                                            </span>
+                                            <span class="badges bg-lightred"
+                                                  th:if="${order.get().getStatus().equals(orderStatus[3])}">Cancelled
+                                            </span>
+                                        </h6>
+                                    </li>
+                                    <li>
+                                        <h4>Voucher</h4>
+                                        <h6>
+                                            <span th:text="${order.get().getVoucher() != null ? order.get().getVoucher().getName() : ''}"></span>
+                                        </h6>
+                                    </li>
+                                    <li>
+                                        <h4>Payment</h4>
+                                        <h6><span th:text="${order.get().getPayment().getName()}"></span></h6>
+                                    </li>
+                                    <li>
+                                        <h4>Buyer's Name</h4>
+                                        <h6><span
+                                                th:text="${order.get().getUser().getLastName()} + ' ' + ${order.get().getUser().getFirstName()}"></span>
+                                        </h6>
+                                    </li>
+                                    <li>
+                                        <h4>Buyer's Phone number</h4>
+                                        <h6><span th:text="${order.get().getUser().getPhoneNumber()}"></span></h6>
+                                    </li>
+                                    <li>
+                                        <h4>Buyer's Address</h4>
+                                        <h6><span
+                                                th:text="|${order.get().getAddress().getDetailLocation()}, ${order.get().getAddress().getStreet()}, ${order.get().getAddress().getDistrict()}, ${order.get().getAddress().getCity()}|">></span>
+                                        </h6>
+                                    </li>
+                                    <li th:each="detail : ${order.get().getOrderDetails()}">
+                                        <h4>Product</h4>
+                                        <h6>
+                                            <a th:href="@{/manager/products/productDetail(id=${detail.getProduct().getId()})}"
+                                               th:text="${detail.getProduct().getName()}"></a>
+                                            <span th:text="' x ' + ${detail.getQuantity()}"></span>
+                                            <img th:if="${detail.getProduct().getThumbnail().startsWith('http')}"
+                                                 th:src="${detail.getProduct().getThumbnail()}"
+                                                 alt="Ảnh sản phẩm mặc định">
+                                            <img th:unless="${detail.getProduct().getThumbnail().startsWith('http')}"
+                                                 th:src="@{'/uploads/' + ${detail.getProduct().getThumbnail()}}"
+                                                 alt="Ảnh sản phẩm">
+                                        </h6>
+                                    </li>
+                                    <select id="shipperSelect" class="form-select" style="display: none;">
+                                        <option value="">Select Shipper</option>
+                                        <option th:each="shipper : ${shippers}" th:value="${shipper.id}"
+                                                th:text="${shipper.firstName}"></option>
+                                    </select>
+                                </ul>
+                                <div style="display: flex; gap: 20px;">
+                                    <form class="confirm-text-shipping"
+                                          th:if="${order.get().getStatus().equals(orderStatus[0]) || order.get().getStatus().equals(orderStatus[3])}"
+                                          th:action="@{/manager/orders/shipping(id=${order.get().getId()})}"
+                                          method="post">
+                                        <input class="btn btn-submit" type="submit" th:value="Shipping">
+                                    </form>
+                                    <form th:if="${order.get().getStatus().equals(orderStatus[1]) || order.get().getStatus().equals(orderStatus[3])}"
+                                          th:action="@{/manager/orders/pending(id=${order.get().getId()})}"
+                                          method="post">
+                                        <input class="btn btn-submit" type="submit" th:value="Pending">
+                                    </form>
+                                    <form th:if="${!order.get().getStatus().equals(orderStatus[3])}"
+                                          th:action="@{/manager/orders/cancelled(id=${order.get().getId()})}"
+                                          method="post">
+                                        <input class="btn btn-danger" type="submit" th:value="Cancelled">
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:insert="~{manager/fragments/script::script}"></div>
+
+</body>
+</html>
+<script>
+    $(document).ready(function () {
+        $(".confirm-text-shipping").on("click", function (event) {
+            event.preventDefault(); // Prevent the default form submission
+            var form = $(this).closest("form");
+            var orderId = form.attr("action").split('=')[1]; // Get orderId from the form action URL
+            Swal.fire({
+                title: "Select Shipper",
+                html: $('#shipperSelect').clone().show()[0], // Clone and show the shipper dropdown
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, ship it!",
+                confirmButtonClass: "btn btn-primary",
+                cancelButtonClass: "btn btn-danger ml-1",
+                buttonsStyling: false,
+                preConfirm: () => {
+                    const shipperId = Swal.getPopup().querySelector('#shipperSelect').value;
+                    if (!shipperId) {
+                        Swal.showValidationMessage(`Please select a shipper`);
+                    }
+                    return {shipperId: shipperId};
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.attr("action", `/manager/orders/shipping?id=${orderId}&shipper=${result.value.shipperId}`);
+                    form.submit();
+                }
+            });
+        });
+    });
+</script>

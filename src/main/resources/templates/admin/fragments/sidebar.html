@@ -1,0 +1,71 @@
+<div class="sidebar" id="sidebar" th:fragment="admin-sidebar">
+    <div class="sidebar-inner slimscroll">
+        <div id="sidebar-menu" class="sidebar-menu">
+            <ul>
+                <li class="active">
+                    <a th:href="@{/admin/dashboard}"><img th:src="@{/admin/assets/img/icons/dashboard.svg}" alt="img"><span>
+                                    Dashboard</span> </a>
+                </li>
+<!--                <li class="inactive">-->
+<!--                    <a th:href="@{/admin/products}"><img th:src="@{/admin/assets/img/icons/product.svg}"-->
+<!--                                                           alt="img"><span>-->
+<!--                                    Product</span> </a>-->
+<!--                </li>-->
+                <li class="submenu">
+                    <a href="javascript:void(0);"><img th:src="@{/admin/assets/img/icons/purchase1.svg}"
+                                                       alt="img"><span>
+                                    Brand</span> <span class="menu-arrow"></span></a>
+                    <ul>
+                        <li><a th:href="@{/admin/brands}">Brand List</a></li>
+                        <li><a th:href="@{/admin/brands/add-brand}">Add Brand</a></li>
+                    </ul>
+                </li>
+                <li class="submenu">
+                    <a href="javascript:void(0);"><img th:src="@{/admin/assets/img/icons/product.svg}" alt="img"><span>
+                                    Category</span> <span class="menu-arrow"></span></a>
+                    <ul>
+                        <li><a href="/admin/categories">Category List</a></li>
+                        <li><a href="/admin/categories/add-category">Add Category</a></li>
+                    </ul>
+                </li>
+                <li class="submenu">
+                    <a href="javascript:void(0);"><img th:src="@{/admin/assets/img/icons/users1.svg}" alt="img"><span>
+                                    User</span> <span class="menu-arrow"></span></a>
+                    <ul>
+                        <li><a th:href="@{/admin/users}">Users List</a></li>
+                        <li><a th:href="@{/admin/users/add-user}">New User</a></li>
+
+                    </ul>
+                </li>
+<!--                <li class="submenu">-->
+<!--                    <a href="javascript:void(0);"><img th:src="@{/admin/assets/img/icons/sales1.svg}" alt="img"><span>-->
+<!--                                    Order</span> <span class="menu-arrow"></span></a>-->
+<!--                    <ul>-->
+<!--                        <li><a th:href="@{/admin/users}">Order</a></li>-->
+<!--                        <li><a th:href="@{/admin/users}">Order</a></li>-->
+<!--                    </ul>-->
+<!--                </li>-->
+                <li class="submenu">
+                    <a href="javascript:void(0);"><img th:src="@{/admin/assets/img/icons/expense1.svg}" alt="img"><span>
+                                    Voucher</span> <span class="menu-arrow"></span></a>
+                    <ul>
+                        <li><a th:href="@{/admin/vouchers}">Voucher List</a></li>
+                        <li><a th:href="@{/admin/vouchers/save}">Add Voucher</a></li>
+                    </ul>
+                </li>
+                <li class="inactive">
+                    <a th:href="@{/user/home}"><img th:src="@{/admin/assets/img/icons/users1.svg}" alt="img"><span>
+                                    User Home</span> </a>
+                </li>
+                <li class="inactive">
+                    <a th:href="@{/manager/home}"><img th:src="@{/admin/assets/img/icons/users1.svg}" alt="img"><span>
+                                    Manager Home</span> </a>
+                </li>
+                <li class="inactive">
+                    <a th:href="@{/shipper/dashboard}"><img th:src="@{/admin/assets/img/icons/quotation1.svg}" alt="img"><span>
+                                    Shipper Dashboard</span> </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
