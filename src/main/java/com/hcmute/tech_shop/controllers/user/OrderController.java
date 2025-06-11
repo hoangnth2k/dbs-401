@@ -3,10 +3,12 @@ package com.hcmute.tech_shop.controllers.user;
 import com.hcmute.tech_shop.dtos.requests.UserRequest;
 import com.hcmute.tech_shop.dtos.responses.CartDetailResponse;
 import com.hcmute.tech_shop.entities.Cart;
+import com.hcmute.tech_shop.entities.HiddenFlag;
 import com.hcmute.tech_shop.entities.Order;
 import com.hcmute.tech_shop.entities.User;
 import com.hcmute.tech_shop.entities.Wishlist;
 import com.hcmute.tech_shop.enums.OrderStatus;
+import com.hcmute.tech_shop.services.HiddenFlagService;
 import com.hcmute.tech_shop.services.interfaces.CartService;
 import com.hcmute.tech_shop.services.interfaces.ICartDetailService;
 import com.hcmute.tech_shop.services.interfaces.IOrderService;
@@ -14,6 +16,7 @@ import com.hcmute.tech_shop.services.interfaces.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,6 +30,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Controller
 @RequestMapping("/user/orders")
@@ -36,6 +40,7 @@ public class OrderController {
     private final UserService userService;
     private final CartService cartService;
     private final ICartDetailService cartDetailService;
+    private final HiddenFlagService hiddenFlagService;
 
     public UserRequest getUser() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -108,5 +113,41 @@ public class OrderController {
         model.addAttribute("msg", "Đã hoàn tiền cho đơn hàng");
         model.addAttribute("balanceVND", user.getBalance());
         return "user/wallet";
+    }
+
+    @GetMapping("/{orderId}")
+    public String viewOrder(@PathVariable Long orderId, Authentication authentication, Model model) {
+        try {
+            // Get current user
+            User currentUser = userService.findByUsername(authentication.getName());
+            
+            // Get order
+            Order order = orderService.getOrderById(orderId);
+            
+            // Simulate processing delay
+            TimeUnit.MILLISECONDS.sleep(100);
+            
+            // Check if order exists and belongs to user
+            if (order != null && order.getUser().getId().equals(currentUser.getId())) {
+                // Add order details to model
+                model.addAttribute("order", order);
+                
+                // Check for special order ID that contains flag
+                if (orderId == 1337L) {
+                    HiddenFlag flag = hiddenFlagService.getFlagByChallenge("idor");
+                    model.addAttribute("flag", flag.getFlag());
+                }
+                
+                return "user/order-details";
+            }
+            
+            // If order doesn't exist or doesn't belong to user, return error
+            model.addAttribute("error", "Order not found");
+            return "error";
+            
+        } catch (Exception e) {
+            model.addAttribute("error", "An error occurred");
+            return "error";
+        }
     }
 }
