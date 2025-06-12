@@ -25,7 +25,7 @@ public class Order extends TrackingDate {
     private BigDecimal totalPrice;
 
     @Column(name = "active", nullable = false)
-    private boolean active;
+    private String active;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)

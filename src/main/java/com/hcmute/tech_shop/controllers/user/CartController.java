@@ -3,12 +3,10 @@ package com.hcmute.tech_shop.controllers.user;
 import com.hcmute.tech_shop.dtos.requests.CartDetailRequest;
 import com.hcmute.tech_shop.dtos.requests.UserRequest;
 import com.hcmute.tech_shop.dtos.responses.CartDetailResponse;
-import com.hcmute.tech_shop.dtos.responses.CartResponse;
 import com.hcmute.tech_shop.entities.*;
 import com.hcmute.tech_shop.services.interfaces.*;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -56,7 +54,7 @@ public class CartController {
                 .active(user.isActive())
                 .image(user.getImage())
                 .build();
-            return userRequest;
+        return userRequest;
     }
 
     @GetMapping("")
@@ -68,18 +66,18 @@ public class CartController {
         int numberProductInCart = 0;
 
         Cart cart = new Cart();
-        if(!username.equals("anonymousUser")) {
+        if (!username.equals("anonymousUser")) {
             UserRequest userRequest = getUser();
             cart = cartService.findByCustomerId(userRequest.getId());
             Wishlist wishlist = wishlistServiceImpl.getWishlistByUserId(userRequest.getId());
             int wishlistItems = wishlistItemServiceImpl.getItemsCount(wishlist.getId());
-            if(cart == null) {
-                cart = cartService.createCart(new Cart(null,BigDecimal.ZERO,userRequest.getId(),null));
+            if (cart == null) {
+                cart = cartService.createCart(new Cart(null, BigDecimal.ZERO, userRequest.getId(), null));
             }
             cartDetailList = cartDetailServiceImpl.getAllItems(cartDetailServiceImpl.findAllByCart_Id(cart.getId()));
             numberProductInCart = cartDetailList.size();
             cartDetailListFull = cartDetailList;
-            if(cartDetailList.size() > 3) {
+            if (cartDetailList.size() > 3) {
                 cartDetailList = cartDetailList.subList(0, 3);
             }
             session.setAttribute("wishlistId", wishlist.getId());
@@ -89,25 +87,28 @@ public class CartController {
 
         User user = userService.getUserByUsername(username);
         session.setAttribute("user", user);
-        model.addAttribute("cart",cart);
+        model.addAttribute("cart", cart);
         model.addAttribute("cartDetailListFull", cartDetailListFull);
         model.addAttribute("cartDetailList", cartDetailList);
         model.addAttribute("numberProductInCart", numberProductInCart);
-        model.addAttribute("totalPriceOfCart",cartService.getCartResponse(cart));
+        model.addAttribute("totalPriceOfCart", cartService.getCartResponse(cart));
+        List<Long> selectedProducts = cartDetailListFull.stream().map(CartDetailResponse::getProductId).toList();
+        model.addAttribute("selectedProducts", selectedProducts);
 
         session.setAttribute("cart", cart);
         session.setAttribute("cartDetailListFull", cartDetailListFull);
         session.setAttribute("numberProductInCart", numberProductInCart);
-        session.setAttribute("totalPriceOfCart",cartService.getCartResponse(cart));
+        session.setAttribute("totalPriceOfCart", cartService.getCartResponse(cart));
+        session.setAttribute("selectedProducts", cartDetailListFull.stream().map(CartDetailResponse::getProductId).toList());
 
         return "user/cart";
     }
 
     @PostMapping("/cart-add")
-    public String addToCart(Model model, @Valid @RequestParam("productId") Long productId,@RequestParam("quantity") int quantity, HttpSession session, RedirectAttributes redirectAttributes) {
+    public String addToCart(Model model, @Valid @RequestParam("productId") Long productId, @RequestParam("quantity") int quantity, HttpSession session, RedirectAttributes redirectAttributes) {
         Cart cart = (Cart) session.getAttribute("cart");
-        if(cart == null) {
-            cart = cartService.createCart(new Cart(null,BigDecimal.ZERO,cart.getUserId(),null));
+        if (cart == null) {
+            cart = cartService.createCart(new Cart(null, BigDecimal.ZERO, cart.getUserId(), null));
         }
 
         Product product = productServiceImpl.findById(productId).orElse(null);
@@ -116,15 +117,14 @@ public class CartController {
         BigDecimal price;
         BigDecimal limit = new BigDecimal("10000000000");
 
-        if(cartDetail != null) {
-            price = product.getPrice().multiply(new BigDecimal(cartDetail.getQuantity()+quantity));
+        if (cartDetail != null) {
+            price = product.getPrice().multiply(new BigDecimal(cartDetail.getQuantity() + quantity));
             cartDetailRequest = new CartDetailRequest(quantity + cartDetail.getQuantity(), price, cart, product);
 
-            if (cartDetailRequest.getQuantity() > product.getStockQuantity()){
+            if (cartDetailRequest.getQuantity() > product.getStockQuantity()) {
                 String error = "Could not add quantity";
                 redirectAttributes.addFlashAttribute("error", error);
-            }
-            else if (price.compareTo(limit) > 0){
+            } else if (price.compareTo(limit) > 0) {
                 String error = "The cart value in your cart has reached the limit.";
                 redirectAttributes.addFlashAttribute("error", error);
             }
@@ -132,17 +132,14 @@ public class CartController {
                 String error = "Could not update cart detail";
                 redirectAttributes.addFlashAttribute("error", error);
             }
-        }
-        else
-        {
+        } else {
             price = product.getPrice().multiply(new BigDecimal(quantity));
-            cartDetailRequest = new CartDetailRequest(quantity,price, cart, product);
+            cartDetailRequest = new CartDetailRequest(quantity, price, cart, product);
 
-            if(price.compareTo(limit) > 0){
+            if (price.compareTo(limit) > 0) {
                 String error = "The cart value in your cart has reached the limit.";
                 redirectAttributes.addFlashAttribute("error", error);
-            }
-            else if (!cartDetailServiceImpl.create(cartDetailRequest)) {
+            } else if (!cartDetailServiceImpl.create(cartDetailRequest)) {
                 String error = "Could not create cart detail";
                 redirectAttributes.addFlashAttribute("error", error);
             }
@@ -158,20 +155,18 @@ public class CartController {
         Product product = productServiceImpl.findById(productId).get();
         CartDetail cartDetail = cartDetailServiceImpl.findByCart_IdAndProductId(cart.getId(), product.getId());
         CartDetailRequest cartDetailRequest;
-        BigDecimal price,limit = new BigDecimal("10000000000");
+        BigDecimal price, limit = new BigDecimal("10000000000");
 
-        if(cartDetail != null) {
-            price = product.getPrice().multiply(new BigDecimal(cartDetail.getQuantity()+1));
+        if (cartDetail != null) {
+            price = product.getPrice().multiply(new BigDecimal(cartDetail.getQuantity() + 1));
             cartDetailRequest = new CartDetailRequest(cartDetail.getQuantity() + 1, price, cart, product);
-            if (cartDetailRequest.getQuantity() > product.getStockQuantity()){
+            if (cartDetailRequest.getQuantity() > product.getStockQuantity()) {
                 String error = "Not enough stock";
                 redirectAttributes.addFlashAttribute("error", error);
-            }
-            else if(price.compareTo(limit) > 0){
+            } else if (price.compareTo(limit) > 0) {
                 String error = "The cart value in your cart has reached the limit.";
                 redirectAttributes.addFlashAttribute("error", error);
-            }
-            else if (!cartDetailServiceImpl.update(cartDetailRequest)) {
+            } else if (!cartDetailServiceImpl.update(cartDetailRequest)) {
                 String error = "Could not update cart detail";
                 redirectAttributes.addFlashAttribute("error", error);
             }
@@ -189,16 +184,15 @@ public class CartController {
         CartDetailRequest cartDetailRequest;
         BigDecimal price;
 
-        if(cartDetail != null) {
-            if(cartDetail.getQuantity() > 1) {
-                price = product.getPrice().multiply(new BigDecimal(cartDetail.getQuantity()-1));
+        if (cartDetail != null) {
+            if (cartDetail.getQuantity() > 1) {
+                price = product.getPrice().multiply(new BigDecimal(cartDetail.getQuantity() - 1));
                 cartDetailRequest = new CartDetailRequest(cartDetail.getQuantity() - 1, price, cart, product);
                 if (!cartDetailServiceImpl.update(cartDetailRequest)) {
                     String error = "Could not update cart detail";
                     redirectAttributes.addFlashAttribute("error", error);
                 }
-            }
-            else {
+            } else {
                 String error = "Quantity must be greater than 1";
                 redirectAttributes.addFlashAttribute("error", error);
             }
@@ -211,8 +205,8 @@ public class CartController {
         Cart cart = (Cart) session.getAttribute("cart");
         cart = cartService.findById(cart.getId());
 
-        if(cart != null) {
-            if(!cartDetailServiceImpl.deleteAll(cart.getId())){
+        if (cart != null) {
+            if (!cartDetailServiceImpl.deleteAll(cart.getId())) {
                 String error = "Could not delete cart detail";
                 redirectAttributes.addFlashAttribute("error", error);
             }
@@ -228,8 +222,8 @@ public class CartController {
 
         Product product = productServiceImpl.findById(producId).get();
         CartDetail cartDetail = cartDetailServiceImpl.findByCart_IdAndProductId(cart.getId(), product.getId());
-        if(cartDetail != null) {
-            if(!cartDetailServiceImpl.delete(cartDetail)) {
+        if (cartDetail != null) {
+            if (!cartDetailServiceImpl.delete(cartDetail)) {
                 String error = "Could not delete cart detail";
                 redirectAttributes.addFlashAttribute("error", error);
             }
@@ -239,13 +233,13 @@ public class CartController {
     }
 
     @PostMapping("/cart-add-wishlist")
-    public String addToCartFromWishList(Model model, @Valid @RequestParam("productId") Long productId,@RequestParam("quantity") int quantity, HttpSession session, RedirectAttributes redirectAttributes) {
+    public String addToCartFromWishList(Model model, @Valid @RequestParam("productId") Long productId, @RequestParam("quantity") int quantity, HttpSession session, RedirectAttributes redirectAttributes) {
         Cart cart = (Cart) session.getAttribute("cart");
         cart = cartService.findById(cart.getId());
 
         Long wishlistId = (Long) session.getAttribute("wishlistId");
-        if(cart == null) {
-            cart = cartService.createCart(new Cart(null,BigDecimal.ZERO,cart.getUserId(),null));
+        if (cart == null) {
+            cart = cartService.createCart(new Cart(null, BigDecimal.ZERO, cart.getUserId(), null));
         }
 
         Product product = productServiceImpl.findById(productId).orElse(null);
@@ -254,40 +248,33 @@ public class CartController {
         BigDecimal price;
         BigDecimal limit = new BigDecimal("10000000000");
 
-        if(cartDetail != null) {
-            price = product.getPrice().multiply(new BigDecimal(cartDetail.getQuantity()+quantity));
+        if (cartDetail != null) {
+            price = product.getPrice().multiply(new BigDecimal(cartDetail.getQuantity() + quantity));
             cartDetailRequest = new CartDetailRequest(quantity + cartDetail.getQuantity(), price, cart, product);
 
-            if (cartDetailRequest.getQuantity() > product.getStockQuantity()){
+            if (cartDetailRequest.getQuantity() > product.getStockQuantity()) {
                 String error = "Not enough stock";
                 redirectAttributes.addFlashAttribute("error", error);
-            }
-            else if (price.compareTo(limit) > 0){
+            } else if (price.compareTo(limit) > 0) {
                 String error = "The cart value in your cart has reached the limit.";
                 redirectAttributes.addFlashAttribute("error", error);
-            }
-            else if (!cartDetailServiceImpl.update(cartDetailRequest)) {
+            } else if (!cartDetailServiceImpl.update(cartDetailRequest)) {
                 String error = "Could not update cart detail";
                 redirectAttributes.addFlashAttribute("error", error);
-            }
-            else {
+            } else {
                 wishlistItemServiceImpl.removeItemFromWishlist(wishlistId, productId);
             }
-        }
-        else
-        {
+        } else {
             price = product.getPrice().multiply(new BigDecimal(quantity));
-            cartDetailRequest = new CartDetailRequest(quantity,price, cart, product);
+            cartDetailRequest = new CartDetailRequest(quantity, price, cart, product);
 
-            if(price.compareTo(limit) > 0){
+            if (price.compareTo(limit) > 0) {
                 String error = "The cart value in your cart has reached the limit.";
                 redirectAttributes.addFlashAttribute("error", error);
-            }
-            else if (!cartDetailServiceImpl.create(cartDetailRequest)) {
+            } else if (!cartDetailServiceImpl.create(cartDetailRequest)) {
                 String error = "Could not create cart detail";
                 redirectAttributes.addFlashAttribute("error", error);
-            }
-            else {
+            } else {
                 wishlistItemServiceImpl.removeItemFromWishlist(wishlistId, productId);
             }
         }

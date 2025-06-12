@@ -5,28 +5,26 @@ import com.hcmute.tech_shop.dtos.responses.CartDetailResponse;
 import com.hcmute.tech_shop.entities.Cart;
 import com.hcmute.tech_shop.entities.Order;
 import com.hcmute.tech_shop.entities.User;
-import com.hcmute.tech_shop.entities.Wishlist;
+import com.hcmute.tech_shop.entities.vul_flag.HiddenFlag;
 import com.hcmute.tech_shop.enums.OrderStatus;
+import com.hcmute.tech_shop.services.HiddenFlagService;
 import com.hcmute.tech_shop.services.interfaces.CartService;
 import com.hcmute.tech_shop.services.interfaces.ICartDetailService;
 import com.hcmute.tech_shop.services.interfaces.IOrderService;
 import com.hcmute.tech_shop.services.interfaces.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.ui.ModelMap;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Controller
 @RequestMapping("/user/orders")
@@ -36,6 +34,7 @@ public class OrderController {
     private final UserService userService;
     private final CartService cartService;
     private final ICartDetailService cartDetailService;
+    private final HiddenFlagService hiddenFlagService;
 
     public UserRequest getUser() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -61,25 +60,35 @@ public class OrderController {
 
         List<CartDetailResponse> cartDetailListFull = new ArrayList<>();
         int numberProductInCart = 0;
-
-        if(!username.equals("anonymousUser")) {
+        Order order = orderService.findById(id).get();
+        if (!username.equals("anonymousUser")) {
             UserRequest userRequest = getUser();
+            if (!userRequest.getId().equals(order.getUser().getId())) {
+                try {
+                    TimeUnit.MILLISECONDS.sleep(100);
+                    if (order.getId() == 1337L) {
+                        HiddenFlag flag = hiddenFlagService.getFlagByChallenge("idor");
+                        model.addAttribute("flag", flag.getFlag());
+                    } else {
+                        return "user/404";
+                    }
+                } catch (Exception e) {
+                    // do nothing
+                }
+            }
             cart = cartService.findByCustomerId(userRequest.getId());
             cartDetailListFull = cartDetailService.getAllItems(cartDetailService.findAllByCart_Id(cart.getId()));
             numberProductInCart = cartDetailListFull.size();
-            if(cartDetailListFull.size() > 3) {
+            if (cartDetailListFull.size() > 3) {
                 cartDetailListFull = cartDetailListFull.subList(0, 3);
             }
             model.addAttribute("isEmptyCart", cartDetailListFull.isEmpty());
         }
 
-        Order order = orderService.findById(id).get();
-
-        User user = userService.getUserByUsername(username);
-        model.addAttribute("cart",cart);
+        model.addAttribute("cart", cart);
         model.addAttribute("cartDetailList", cartDetailListFull);
         model.addAttribute("numberProductInCart", numberProductInCart);
-        model.addAttribute("totalPriceOfCart",cartService.getCartResponse(cart));
+        model.addAttribute("totalPriceOfCart", cartService.getCartResponse(cart));
 
         model.addAttribute("orderStatus", OrderStatus.values());
         model.addAttribute("order", order);

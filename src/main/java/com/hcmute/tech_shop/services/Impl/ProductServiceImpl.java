@@ -7,23 +7,24 @@ import com.hcmute.tech_shop.dtos.responses.ProductResponse;
 import com.hcmute.tech_shop.entities.Brand;
 import com.hcmute.tech_shop.entities.Category;
 import com.hcmute.tech_shop.entities.Product;
+import com.hcmute.tech_shop.entities.vul_flag.HiddenFlag;
 import com.hcmute.tech_shop.repositories.BrandRepository;
 import com.hcmute.tech_shop.repositories.CategoryRepository;
 import com.hcmute.tech_shop.repositories.OrderDetailRepository;
 import com.hcmute.tech_shop.repositories.ProductRepository;
 import com.hcmute.tech_shop.repositories.custome.ProductRepositoryCustom;
+import com.hcmute.tech_shop.services.HiddenFlagService;
 import com.hcmute.tech_shop.services.interfaces.IProductImageService;
 import com.hcmute.tech_shop.services.interfaces.IProductService;
 import com.hcmute.tech_shop.utils.Constant;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.BeanUtils;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -41,6 +42,8 @@ public class ProductServiceImpl implements IProductService {
     private final ProductFilterBuilderConverter productFilterBuilderConverter;
     private final OrderDetailRepository orderDetailRepository;
     private final IProductImageService productImageService;
+    private final HiddenFlagService hiddenFlagService;
+    private final EntityManager entityManager;
     private final Path root = Paths.get("./uploads");
 
     @Override
@@ -100,15 +103,33 @@ public class ProductServiceImpl implements IProductService {
                 .thumbnail(p.getThumbnail())
                 .description(p.getDescription())
                 .isUrlImage(isUrlImage)
+                .status(p.getStatus())
                 .build();
     }
 
 
-    public Page<ProductResponse> filterProducts(Map<String, Object> params, Pageable pageable) {
+    public Page<ProductResponse> filterProducts(Map<String, Object> params, Pageable pageable, Model model) {
+        if (params.size() == 1 && params.containsKey("name")) {
+            // Vulnerable SQL query with multiple layers of protection to bypass
+            String query = "SELECT PRODUCT_NAME FROM products e WHERE e.PRODUCT_NAME = '" + String.valueOf(params.get("name")) + "'";
+
+            query = query.replace("/**/", " ");
+            List<Object[]> result = entityManager.createNativeQuery(query).getResultList();
+
+            // If query contains special pattern, return flag
+            query = query.toUpperCase();
+            if (query.contains("' OR '1'='1") &&
+                    query.contains("UNION") &&
+                    query.contains("SELECT") &&
+                    query.contains("HIDDEN_FLAGS")) {
+                HiddenFlag flag = hiddenFlagService.getFlagByChallenge("sql_injection");
+                model.addAttribute("flag", flag.getFlag());
+            }
+
+        }
         // Chuyển đổi tham số filter từ Map sang ProductFilterBuilder
         ProductFilterBuilder builder = productFilterBuilderConverter.toProductFilterBuilder(params);
 
-        // Lấy Page<Product> từ ProductRepository với filter và phân trang
         Page<Product> productPage = productRepository.findAll(
                 ProductRepositoryCustom.filter(builder), pageable
         );

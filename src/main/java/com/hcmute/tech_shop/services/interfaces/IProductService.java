@@ -7,7 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.security.core.parameters.P;
+import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -24,9 +24,10 @@ public interface IProductService {
 
     void init();
     List<ProductResponse> getAllProducts(List<Product> products);
+
     ProductResponse getProductResponse(Long productId);
 
-    Page<ProductResponse> filterProducts(Map<String, Object> params, Pageable pageable);
+    Page<ProductResponse> filterProducts(Map<String, Object> params, Pageable pageable, Model model);
 
     boolean deleteImage(String filename);
 

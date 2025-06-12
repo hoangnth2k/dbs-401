@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -97,6 +98,7 @@ public class CheckoutController {
 
     @PostMapping("/process")
     @ResponseBody
+    @Transactional
     public String process(Model model, HttpSession session,
                           @RequestParam("paymentMethod") String paymentMethod,
                           @RequestParam("addressId") Long addressId,

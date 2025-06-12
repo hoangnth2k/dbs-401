@@ -25,6 +25,7 @@ public class Address {
 
     private String city;
 
+    @Column(name = "detail_location")
     private String detailLocation;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

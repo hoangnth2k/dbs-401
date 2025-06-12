@@ -86,7 +86,7 @@ public class OrderServiceImpl implements IOrderService {
                                List<CartDetailResponse> cartDetailList) {
         Order order = new Order();
         order.setTotalPrice(totalPrice);
-        order.setActive(true);
+        order.setActive("1");
         order.setUser(user);
         order.setVoucher(voucher);
         // Decrease voucher quantity
@@ -117,7 +117,7 @@ public class OrderServiceImpl implements IOrderService {
         try {
             Order order = new Order();
             order.setTotalPrice(totalPrice);
-            order.setActive(true);
+            order.setActive("1");
             order.setUser(user);
             order.setPayment(payment);
             order.setAddress(address);

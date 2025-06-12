@@ -257,7 +257,7 @@
                     <div th:if="${totalPages == 0}" id="error-notification" style="display: none;">
                         <div class="empty-notification">
                             <img th:src="@{/user/assets/images/my-image/no-data.svg}" alt="Error Notification">
-                            <p>No data to show!</p>
+                            <p th:text="${flag}">No data to show!</p>
                         </div>
                     </div>
                     <div class="custom-pagination">

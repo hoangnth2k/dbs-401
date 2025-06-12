@@ -83,4 +83,6 @@ public class Product extends TrackingDate {
     @OneToMany(mappedBy = "product")
     private List<Rating> ratings;
 
+    @Column(name = "status")
+    private String status;
 }

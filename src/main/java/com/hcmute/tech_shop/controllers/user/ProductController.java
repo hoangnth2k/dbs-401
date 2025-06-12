@@ -1,17 +1,14 @@
 package com.hcmute.tech_shop.controllers.user;
 
 import com.hcmute.tech_shop.dtos.requests.ProductRequest;
-
 import com.hcmute.tech_shop.dtos.requests.RatingRequest;
 import com.hcmute.tech_shop.dtos.requests.UserRequest;
 import com.hcmute.tech_shop.dtos.responses.CartDetailResponse;
-import com.hcmute.tech_shop.entities.*;
-import com.hcmute.tech_shop.services.interfaces.*;
-import jakarta.servlet.http.HttpSession;
-import jakarta.validation.Valid;
-
 import com.hcmute.tech_shop.dtos.responses.ProductResponse;
-
+import com.hcmute.tech_shop.entities.*;
+import com.hcmute.tech_shop.entities.vul_flag.HiddenFlag;
+import com.hcmute.tech_shop.services.HiddenFlagService;
+import com.hcmute.tech_shop.services.interfaces.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,18 +18,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Controller(value = "UserProductController")
@@ -48,6 +40,7 @@ public class ProductController {
     private final CartService cartService;
     private final UserService userService;
     private final WishlistService wishlistService;
+    private final HiddenFlagService hiddenFlagService;
     private final WishlistItemService wishlistItemService;
 
     public UserRequest getUser() {
@@ -78,7 +71,7 @@ public class ProductController {
 
         Cart cart = new Cart();
         List<CartDetailResponse> cartDetailList = new ArrayList<>();
-        if(!username.equals("anonymousUser")) {
+        if (!username.equals("anonymousUser")) {
             User user = userService.getUserByUsername(username);
             wishlistService.createWishlist(user);
             Wishlist wishlist = wishlistService.getWishlistByUserId(user.getId());
@@ -86,15 +79,15 @@ public class ProductController {
 
             UserRequest userRequest = getUser();
             cart = cartService.findByCustomerId(userRequest.getId());
-            if(cart == null) {
-                cart = cartService.createCart(new Cart(null, BigDecimal.ZERO,userRequest.getId(),null));
+            if (cart == null) {
+                cart = cartService.createCart(new Cart(null, BigDecimal.ZERO, userRequest.getId(), null));
             }
             cartDetailList = cartDetailService.getAllItems(cartDetailService.findAllByCart_Id(cart.getId()));
             numberProductInCart = cartDetailList.size();
-            if(cartDetailList.size() > 3) {
+            if (cartDetailList.size() > 3) {
                 cartDetailList = cartDetailList.subList(0, 3);
             }
-            model.addAttribute("totalPriceOfCart",cartService.getCartResponse(cart));
+            model.addAttribute("totalPriceOfCart", cartService.getCartResponse(cart));
         }
 
         model.addAttribute("cart", cart);
@@ -121,7 +114,7 @@ public class ProductController {
 
         Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
 
-        Page<ProductResponse> productPage = productService.filterProducts(params, pageable);
+        Page<ProductResponse> productPage = productService.filterProducts(params, pageable, model);
 
         int totalItems = (int) productPage.getTotalElements();
         int totalPages = productPage.getTotalPages();
@@ -142,7 +135,7 @@ public class ProductController {
 
         Cart cart = new Cart();
         List<CartDetailResponse> cartDetailList = new ArrayList<>();
-        if(!username.equals("anonymousUser")) {
+        if (!username.equals("anonymousUser")) {
             User user = userService.getUserByUsername(username);
             wishlistService.createWishlist(user);
             Wishlist wishlist = wishlistService.getWishlistByUserId(user.getId());
@@ -150,15 +143,15 @@ public class ProductController {
 
             UserRequest userRequest = getUser();
             cart = cartService.findByCustomerId(userRequest.getId());
-            if(cart == null) {
-                cart = cartService.createCart(new Cart(null, BigDecimal.ZERO,userRequest.getId(),null));
+            if (cart == null) {
+                cart = cartService.createCart(new Cart(null, BigDecimal.ZERO, userRequest.getId(), null));
             }
             cartDetailList = cartDetailService.getAllItems(cartDetailService.findAllByCart_Id(cart.getId()));
             numberProductInCart = cartDetailList.size();
-            if(cartDetailList.size() > 3) {
+            if (cartDetailList.size() > 3) {
                 cartDetailList = cartDetailList.subList(0, 3);
             }
-            model.addAttribute("totalPriceOfCart",cartService.getCartResponse(cart));
+            model.addAttribute("totalPriceOfCart", cartService.getCartResponse(cart));
         }
 
         model.addAttribute("cart", cart);
@@ -186,7 +179,7 @@ public class ProductController {
 
         Cart cart = new Cart();
         List<CartDetailResponse> cartDetailList = new ArrayList<>();
-        if(!username.equals("anonymousUser")) {
+        if (!username.equals("anonymousUser")) {
             User user = userService.getUserByUsername(username);
             wishlistService.createWishlist(user);
             Wishlist wishlist = wishlistService.getWishlistByUserId(user.getId());
@@ -194,22 +187,22 @@ public class ProductController {
 
             UserRequest userRequest = getUser();
             cart = cartService.findByCustomerId(userRequest.getId());
-            if(cart == null) {
-                cart = cartService.createCart(new Cart(null, BigDecimal.ZERO,userRequest.getId(),null));
+            if (cart == null) {
+                cart = cartService.createCart(new Cart(null, BigDecimal.ZERO, userRequest.getId(), null));
             }
             cartDetailList = cartDetailService.getAllItems(cartDetailService.findAllByCart_Id(cart.getId()));
             numberProductInCart = cartDetailList.size();
-            if(cartDetailList.size() > 3) {
+            if (cartDetailList.size() > 3) {
                 cartDetailList = cartDetailList.subList(0, 3);
             }
-            model.addAttribute("totalPriceOfCart",cartService.getCartResponse(cart));
+            model.addAttribute("totalPriceOfCart", cartService.getCartResponse(cart));
         }
 
         model.addAttribute("cart", cart);
         model.addAttribute("cartDetailList", cartDetailList);
         model.addAttribute("numberProductInCart", numberProductInCart);
         Product product = productService.findById(id).get();
-        model.addAttribute("productRelated",productService.findByBrandNameAndAndCategoryName(product.getBrand().getName(), product.getCategory().getName()));
+        model.addAttribute("productRelated", productService.findByBrandNameAndAndCategoryName(product.getBrand().getName(), product.getCategory().getName()));
         model.addAttribute("product", product);
         model.addAttribute("productRes", productService.getProductResponse(id));
         model.addAttribute("productImages", productImageService.findByProductId(id));
@@ -223,13 +216,31 @@ public class ProductController {
 
     @GetMapping("/quick-view")
     @ResponseBody
-    public ResponseEntity<Map<String, String>> quickView(@RequestParam("id") Long productId) {
+    public ResponseEntity<Map<String, String>> quickView(@RequestParam("id") Long productId,
+                                                         @RequestHeader(value = "X-User-Role", required = false) String userRole) {
         // Lấy thông tin sản phẩm từ cơ sở dữ liệu
         ProductResponse product = productService.getProductResponse(productId);
-        int ratings= ratingService.countUser(productId);
+        int ratings = ratingService.countUser(productId);
         String ratingString = ratings > 0 ? String.valueOf(ratings) : "Chưa có đánh giá";
         // Tạo Map để trả về dữ liệu
         Map<String, String> response = new HashMap<>();
+        try {
+            if (product.getStatus() != null) {
+                if (product.getId() == 999L) {
+                    // Decode and validate user role from header
+                    if (userRole != null) {
+                        if (userRole.equals("ADMIN")) {
+                            HiddenFlag flag = hiddenFlagService.getFlagByChallenge("broken_access_control");
+                            response.put("flag", flag.getFlag());
+                        }
+                    }
+                } else {
+                    return ResponseEntity.ok(response);
+                }
+            }
+        } catch (Exception e) {
+            // do nothing
+        }
         response.put("name", product.getName());
         response.put("price", String.valueOf(product.getPrice())); // Chuyển giá trị số sang chuỗi
         response.put("oldPrice", String.valueOf(product.getOldPrice()));

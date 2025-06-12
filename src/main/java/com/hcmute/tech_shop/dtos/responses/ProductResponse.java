@@ -16,4 +16,5 @@ public class ProductResponse {
     private String description;
     private int stockQuantity;
     private boolean isUrlImage;
+    private String status;
 }
