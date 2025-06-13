@@ -164,6 +164,8 @@
                                 <div class="category-select align-items-center justify-content-lg-end justify-content-between">
                                     <!-- Start Single Select  -->
                                     <span class="filter-results" th:text="${showingInfo}"></span>
+                                    <span class="filter-results" th:text="${flag}"></span>
+                                    <span class="filter-results" th:text="${injectResult}"></span>
                                     <select class="single-select" onchange="window.location.href=this.value;">
                                         <option th:selected="${sortBy == 'price' && sortOrder == 'asc'}"
                                                 th:value="@{${baseUrl} + '&sortBy=price&sortOrder=asc'}">Price: Low to High</option>
@@ -257,7 +259,7 @@
                     <div th:if="${totalPages == 0}" id="error-notification" style="display: none;">
                         <div class="empty-notification">
                             <img th:src="@{/user/assets/images/my-image/no-data.svg}" alt="Error Notification">
-                            <p th:text="${flag}">No data to show!</p>
+                            <p >No data to show!</p>
                         </div>
                     </div>
                     <div class="custom-pagination">

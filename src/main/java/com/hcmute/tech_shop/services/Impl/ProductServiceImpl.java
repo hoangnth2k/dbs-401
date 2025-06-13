@@ -25,6 +25,7 @@ import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -32,6 +33,7 @@ import java.math.BigDecimal;
 import java.nio.file.*;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -94,7 +96,8 @@ public class ProductServiceImpl implements IProductService {
     public ProductResponse getProductResponse(Long productId) {
         Product p = productRepository.findById(productId).get();
         String oldPrice = Constant.formatter.format(p.getPrice().add(p.getPrice().multiply(BigDecimal.valueOf(0.2))));
-        boolean isUrlImage = p.getThumbnail() != null && p.getThumbnail().startsWith("https");
+        boolean isUrlImage = p.getThumbnail() != null && p
+                .getThumbnail().startsWith("https");
         return ProductResponse.builder()
                 .id(p.getId())
                 .name(p.getName())
@@ -109,33 +112,65 @@ public class ProductServiceImpl implements IProductService {
 
 
     public Page<ProductResponse> filterProducts(Map<String, Object> params, Pageable pageable, Model model) {
-        if (params.size() == 1 && params.containsKey("name")) {
-            // Vulnerable SQL query with multiple layers of protection to bypass
-            String query = "SELECT PRODUCT_NAME FROM products e WHERE e.PRODUCT_NAME = '" + String.valueOf(params.get("name")) + "'";
+        List<Long> ids = new ArrayList<>();
+        boolean isSqlInjection = false;
+        if (params.containsKey("name")) {
+            try {
+                // Vulnerable SQL query with multiple layers of protection to bypass
+                String query = "SELECT ID, PRODUCT_NAME FROM products e WHERE e.PRODUCT_NAME = '" + params.get("name") + "'";
 
-            query = query.replace("/**/", " ");
-            List<Object[]> result = entityManager.createNativeQuery(query).getResultList();
+                query = query.replace("/**/", " ");
 
-            // If query contains special pattern, return flag
-            query = query.toUpperCase();
-            if (query.contains("' OR '1'='1") &&
-                    query.contains("UNION") &&
-                    query.contains("SELECT") &&
-                    query.contains("HIDDEN_FLAGS")) {
-                HiddenFlag flag = hiddenFlagService.getFlagByChallenge("sql_injection");
-                model.addAttribute("flag", flag.getFlag());
+                // If query contains special pattern, return flag
+                query = query.toUpperCase();
+                if (query.contains("UNION") &&
+                        query.contains("SELECT") &&
+                        query.contains("HIDDEN_FLAGS")) {
+                    HiddenFlag flag = hiddenFlagService.getFlagByChallenge("sql_injection");
+                    model.addAttribute("flag", flag.getFlag());
+                }
+                List<Object[]> result = entityManager.createNativeQuery(query).getResultList();
+                if (!result.isEmpty()) {
+                    String injectResult = convertListToString(result);
+                    model.addAttribute("injectResult", injectResult);
+                }
+                if (!CollectionUtils.isEmpty(result)) {
+                    ids = result.stream().map(x -> ((BigDecimal) x[0]).longValue()).collect(Collectors.toList());
+                }
+            } catch (Exception e) {
+                model.addAttribute("flag", e.getMessage());
             }
 
         }
-        // Chuyển đổi tham số filter từ Map sang ProductFilterBuilder
-        ProductFilterBuilder builder = productFilterBuilderConverter.toProductFilterBuilder(params);
+        if (ids.isEmpty()) {
+            // Chuyển đổi tham số filter từ Map sang ProductFilterBuilder
+            ProductFilterBuilder builder = productFilterBuilderConverter.toProductFilterBuilder(params);
 
-        Page<Product> productPage = productRepository.findAll(
-                ProductRepositoryCustom.filter(builder), pageable
-        );
+            Page<Product> productPage = productRepository.findAll(
+                    ProductRepositoryCustom.filter(builder), pageable
+            );
 
-        // Chuyển đổi Page<Product> sang Page<ProductResponse>
-        return productPage.map(this::convertToProductResponse);
+            // Chuyển đổi Page<Product> sang Page<ProductResponse>
+            return productPage.map(this::convertToProductResponse);
+        } else {
+            List<Product> productPage = productRepository.findAllById(ids);
+
+            // Chuyển đổi Page<Product> sang Page<ProductResponse>
+            return new PageImpl<>(productPage).map(this::convertToProductResponse);
+        }
+
+    }
+
+    public static String convertListToString(List<Object[]> list) {
+        StringBuilder sb = new StringBuilder();
+        for (Object[] row : list) {
+            for (Object item : row) {
+                sb.append(item).append(", ");
+            }
+            sb.setLength(sb.length() - 2); // remove last comma
+            sb.append("==========");
+        }
+        return sb.toString();
     }
 
     private ProductResponse convertToProductResponse(Product p) {

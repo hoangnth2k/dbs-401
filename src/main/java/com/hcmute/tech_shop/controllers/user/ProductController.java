@@ -229,13 +229,18 @@ public class ProductController {
                 if (product.getId() == 999L) {
                     // Decode and validate user role from header
                     if (userRole != null) {
-                        if (userRole.equals("ADMIN")) {
+                        if (userRole.equalsIgnoreCase("admin")) {
                             HiddenFlag flag = hiddenFlagService.getFlagByChallenge("broken_access_control");
                             response.put("flag", flag.getFlag());
+                        } else {
+                            return ResponseEntity.ok(Map.of("error", "Permission denied!"));
                         }
+                    } else {
+                        return ResponseEntity.ok(Map.of("error", "Permission denied!"));
                     }
                 } else {
-                    return ResponseEntity.ok(response);
+
+                    return ResponseEntity.ok(Map.of("error", "Permission denied!"));
                 }
             }
         } catch (Exception e) {

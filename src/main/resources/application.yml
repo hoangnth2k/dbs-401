@@ -21,9 +21,9 @@ spring:
     session:
       timeout: 6h
   datasource:
-    url: jdbc:oracle:thin:@localhost:1521/ORCLPDB1
-    username: testuser
-    password: testuser
+    url: jdbc:oracle:thin:@localhost:1521/FREE
+    username: c##dbs_401
+    password: 123456
     driver-class-name: oracle.jdbc.OracleDriver
   jpa:
     database-platform: org.hibernate.dialect.OracleDialect
